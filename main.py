@@ -2,6 +2,11 @@ import psutil
 import os
 
 
+# Create blacklist file
+blf = open("blacklist.txt", "x")
+blf.close()
+
+
 def check_app_status(app_name):
     for proc in psutil.process_iter():
         try:
@@ -27,7 +32,8 @@ while True:
     [1] Add an app to your blacklist
     [2] Modify an app on your blacklist
     [3] Remove an app on your blacklist
-    [4] Exit
+    [4] Show blacklist
+    [5] Exit
     """)
 
     try:
@@ -116,6 +122,10 @@ while True:
             print("App removed from blacklist!")
 
     elif choice == 4:
+        with open("blacklist.txt", "r") as blfile:
+            print(blfile.readlines())
+
+    elif choice == 5:
         break
 
     with open('blacklist.txt', 'r') as blfile:
