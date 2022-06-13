@@ -1,20 +1,24 @@
 import psutil
-import os
-
+import time
+import threading
 
 # Create blacklist file
 blf = open("blacklist.txt", "x")
 blf.close()
 
+app_names = []
+time_limits = []
+app_times_open = {app_names[i] : 0 for i in range(len(app_names))}
 
 def check_app_status(app_name):
     for proc in psutil.process_iter():
         try:
             if proc.name() == app_name:
                 return True
+            else:
+                return False
         except psutil.NoSuchProcess:
             return False
-    return True
 
 
 def close_app(app_name):
@@ -26,7 +30,37 @@ def close_app(app_name):
             pass
 
 
+def reset_app_open_times():
+    while True:
+        for item in app_times_open.keys():
+            app_times_open[item] = 0
+
+        time.sleep(86400)
+
+
+def log_app_open_times():
+    while True:
+        for app in app_times_open.keys():
+            if check_app_status(app):
+                app_times_open[app] += 1
+
+        time.sleep(60)
+
+
+resetter = threading.Thread(target=reset_app_open_times)
+resetter.daemon = True
+app_time_logger = threading.Thread(target=log_app_open_times)
+app_time_logger.daemon = True
+
 while True:
+    if resetter.is_alive == False:
+        resetter.start()
+
+    if app_time_logger.is_alive == False:
+        app_time_logger.start()
+    
+    start_len = len(app_names)
+
     print("""
     Welcome to Bookworm-bit's anti-procrastination app
     [1] Add an app to your blacklist
@@ -53,7 +87,7 @@ while True:
         print("App added to blacklist!")
 
         time_limit = input(
-            "Enter the time limit you want to set for this app: ")
+            "Enter the time limit you want to set for this app (minutes): ")
         try:
             time_limit = int(time_limit)
         except ValueError:
@@ -61,11 +95,12 @@ while True:
             continue
         with open("blacklist.txt", "r+") as blfile:
             blfile.readlines()[app_index] += f" [{str(time_limit)}]"
+            app_names.append(app_name)
+            time_limits.append(time_limit)
 
     # Modifying app on blacklist
     elif choice == 2:
         app_index = 0
-        app_names = []
         app_times = []
         app_in_blacklist = False
 
@@ -85,7 +120,7 @@ while True:
         
         if app_in_blacklist:
             time_limit = input(
-                "Enter the new time limit you want to set for this app: ")
+                "Enter the new time limit you want to set for this app (minutes): ")
             try:
                 time_limit = int(time_limit)
             except ValueError:
@@ -94,6 +129,7 @@ while True:
 
             with open("blacklist.txt", "r+") as blfile:
                 blfile.readlines()[app_index] = f"{app_name} [{str(time_limit)}]"
+                time_limits.append(time_limit)
             print("App modified on blacklist!")
     
     # Removing app from blacklist
@@ -120,17 +156,22 @@ while True:
             with open("blacklist.txt", "r+") as blfile:
                 blfile.readlines().pop(app_index)
             print("App removed from blacklist!")
+            app_names.pop(app_index)
 
+    # Print blacklist
     elif choice == 4:
         with open("blacklist.txt", "r") as blfile:
             print(blfile.readlines())
 
+    # Exit
     elif choice == 5:
         break
-
+    
+    # App checking
     with open('blacklist.txt', 'r') as blfile:
         data = blfile.readlines()
         app_names = [app.partition(" [")[0] for app in data]
+        app_times = [app.partition(" [")[2].partition("]")[0] for app in data]
 
         for app in app_names:
             if check_app_status(app):
@@ -138,3 +179,8 @@ while True:
                 print(f"Closed {app}")
             else:
                 continue
+    end_len = len(app_names)
+
+    if start_len < end_len:
+        for i in range(end_len - start_len, -1 * (end_len - start_len) - 1, -1):
+            app_times_open[app_names[i]] = 0
