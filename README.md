@@ -1,44 +1,44 @@
-# Project Title
+# Bookcrastinator
 
-Simple overview of use/purpose.
+An app to help with procrastination on PCs.
 
 ## Description
 
-An in-depth paragraph about your project and overview of use.
+A free opensource version of popular apps that help with procrastination
+Features:
+* App open times logging
+* App blacklist
 
 ## Getting Started
 
-### Dependencies
+## Installing
 
-* Describe any prerequisites, libraries, OS version, etc., needed before installing program.
-* ex. Windows 10
+The [Dockerfile](https://Bookworm-bit/anti-procrastination/blob/main/Dockerfile) does that for you!
 
-### Installing
+## Executing program
 
-* How/where to download your program
-* Any modifications needed to be made to files/folders
-
-### Executing program
-
-* How to run the program
-* Step-by-step bullets
+* Clone the project
 ```
-code blocks for commands
+git clone https://github.com/Bookworm-bit/anti-procrastination
+```
+* Switch to the project directory
+```
+cd anti-procrastination
+```
+* Run [main.py](https://github.com/Bookworm-bit/anti-procrastination/blob/main/main.py)
+```
+python3 main.py
 ```
 
 ## Help
 
-Any advise for common problems or issues.
-```
-command to run if program contains helper info
-```
+Feel free to make a pull request or email me at `devworm69@gmail.com`!
 
 ## Authors
 
 Contributors names and contact info
 
-ex. Dominique Pizzie  
-ex. [@DomPizzie](https://twitter.com/dompizzie)
+* Bookworm-bit
 
 ## Version History
 
@@ -48,12 +48,3 @@ ex. [@DomPizzie](https://twitter.com/dompizzie)
 ## License
 
 This project is licensed under the [MIT] License - see the LICENSE.md file for details
-
-## Acknowledgments
-
-Inspiration, code snippets, etc.
-* [awesome-readme](https://github.com/matiassingers/awesome-readme)
-* [PurpleBooth](https://gist.github.com/PurpleBooth/109311bb0361f32d87a2)
-* [dbader](https://github.com/dbader/readme-template)
-* [zenorocha](https://gist.github.com/zenorocha/4526327)
-* [fvcproductions](https://gist.github.com/fvcproductions/1bfc2d4aecb01a834b46)
