@@ -1,19 +1,35 @@
 import psutil
 import time
 import threading
+import os.path as ospath
+import re
 
-# Create blacklist file
-blf = open("blacklist.txt", "x")
-blf.close()
+# Create blacklist file if it does not exist
+if ospath.isfile("blacklist.txt") == False:
+    blf = open("blacklist.txt", "x")
+    blf.close()
 
+# Create daily app times log file if it does not exist
+if ospath.isfile("app_times_log.txt") == False:
+    atlf = open("app_times_log.txt", "x")
+    atlf.close()
+
+# Create global app times log file if it does not exist
+if ospath.isfile("total_app_times_log.txt") == False:
+    tatlf = open("total_app_times_log.txt", "x")
+    tatlf.close()
+
+# Declare variables
 app_names = []
 time_limits = []
 app_times_open = {app_names[i] : 0 for i in range(len(app_names))}
 
+
+# Checks if apps are open
 def check_app_status(app_name):
     for proc in psutil.process_iter():
         try:
-            if proc.name() == app_name:
+            if proc.name().lower().partition(".")[0] == app_name.lower():
                 return True
             else:
                 return False
@@ -21,15 +37,18 @@ def check_app_status(app_name):
             return False
 
 
+# Closes app
 def close_app(app_name):
     for proc in psutil.process_iter():
         try:
-            if proc.name() == app_name:
+            if proc.name().lower().partition(".")[0] == app_name.lower():
                 proc.kill()
         except psutil.NoSuchProcess:
+            print("No such process")
             pass
 
 
+# Daily reset of daily app open times
 def reset_app_open_times():
     while True:
         for item in app_times_open.keys():
@@ -38,21 +57,57 @@ def reset_app_open_times():
         time.sleep(86400)
 
 
+# Log how long an app is open in a day
 def log_app_open_times():
+    n = 1
     while True:
         for app in app_times_open.keys():
             if check_app_status(app):
                 app_times_open[app] += 1
+        
+        # Daily app time open
+        for item in app_times_open.keys():
+            with open("app_times_log.txt", "r+") as atlf:
+                atlf.write(f"{item} : {app_times_open[item]}\n")
+
+        # Total app time open
+        with open("total_app_times_log.txt", "r+") as tatlf:
+            if len(tatlf.readlines()) == 0:
+                tatlf.write(f"{item} : {app_times_open[item]}\n")
+            else:    
+                for item in app_times_open.keys():
+                    data = tatlf.readlines()
+                    temp_ind = 0
+
+                    if re.match(f"^{item}.*", item):
+                        temp_ind = app_names.index(item)
+                        previous_time = int(data[temp_ind].split(": ")[2])
+                        data[temp_ind] = f"{item} : {previous_time + app_times_open[item]}, {n}\n"
+        
+        n += 1
+        time.sleep(60)
+
+
+# Check how long an app has been open for in a day
+def check_app_times():
+    while True:
+        for app in app_times_open.keys():
+            if app_times_open[app] >= time_limits[app_names.index(app)]:
+                close_app(app)
+                app_times_open[app] = 0
 
         time.sleep(60)
 
 
+# Initiates daemon threads that run the above functions
 resetter = threading.Thread(target=reset_app_open_times)
 resetter.daemon = True
 app_time_logger = threading.Thread(target=log_app_open_times)
 app_time_logger.daemon = True
 
+# Main loop
 while True:
+    # Checking if threads are alive and starting them if nessacary
     if resetter.is_alive == False:
         resetter.start()
 
@@ -67,7 +122,10 @@ while True:
     [2] Modify an app on your blacklist
     [3] Remove an app on your blacklist
     [4] Show blacklist
-    [5] Exit
+    [5] Show how long you have used an app today
+    [6] Show how long you have used an app since you started using it
+    [7] Show how long on average you use an app per day
+    [8] Exit
     """)
 
     try:
@@ -163,8 +221,28 @@ while True:
         with open("blacklist.txt", "r") as blfile:
             print(blfile.readlines())
 
-    # Exit
+    # Show how long you have used an app today
     elif choice == 5:
+        with open("app_times_log.txt", "r") as atlfile:
+            print(" minutes \n".join(atlfile.readlines()))
+
+    # Total app time open
+    elif choice == 6:
+        with open("total_app_times_log.txt", "r") as tatlfile:
+            print(" minutes \n".join([item.partition(",")[0] for item in tatlfile.readlines()]))
+
+    # Average time open for a specific app
+    elif choice == 7:
+        selected_app = input("Enter the name of an app on your blacklist: ")
+        with open("total_app_times_log.txt", "r") as tatlfile:
+            data = tatlfile.readlines()
+            for item in data:
+                if re.match(f"^{selected_app}.*", item):
+                    day_count = int(item.partition(", ")[2].partition(" \n")[0])
+                    print(f"You use {selected_app} for around {str(int(item.partition(': ')[2].partition(', ')[0]) / day_count)} minutes per day")
+
+    # Exit
+    elif choice == 8:
         break
     
     # App checking
@@ -183,4 +261,4 @@ while True:
 
     if start_len < end_len:
         for i in range(end_len - start_len, -1 * (end_len - start_len) - 1, -1):
-            app_times_open[app_names[i]] = 0
+            app_times_open[app_names[i]] = time_limits[i]
