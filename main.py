@@ -259,6 +259,6 @@ while True:
                 continue
     end_len = len(app_names)
 
-    if start_len < end_len:
-        for i in range(end_len - start_len, -1 * (end_len - start_len) - 1, -1):
-            app_times_open[app_names[i]] = time_limits[i]
+    for item in app_names:
+        if item not in app_times_open.keys():
+            app_times_open[item] = time_limits[app_names.index(item)]
