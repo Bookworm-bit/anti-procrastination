@@ -22,7 +22,7 @@ if ospath.isfile("total_app_times_log.txt") == False:
 # Declare variables
 app_names = []
 time_limits = []
-app_times_open = {app_names[i] : 0 for i in range(len(app_names))}
+app_times_open = {app_names[i]: 0 for i in range(len(app_names))}
 
 
 # Checks if apps are open
@@ -64,7 +64,7 @@ def log_app_open_times():
         for app in app_times_open.keys():
             if check_app_status(app):
                 app_times_open[app] += 1
-        
+
         # Daily app time open
         for item in app_times_open.keys():
             with open("app_times_log.txt", "r+") as atlf:
@@ -74,7 +74,7 @@ def log_app_open_times():
         with open("total_app_times_log.txt", "r+") as tatlf:
             if len(tatlf.readlines()) == 0:
                 tatlf.write(f"{item} : {app_times_open[item]}\n")
-            else:    
+            else:
                 for item in app_times_open.keys():
                     data = tatlf.readlines()
                     temp_ind = 0
@@ -83,7 +83,7 @@ def log_app_open_times():
                         temp_ind = app_names.index(item)
                         previous_time = int(data[temp_ind].split(": ")[2])
                         data[temp_ind] = f"{item} : {previous_time + app_times_open[item]}, {n}\n"
-        
+
         n += 1
         time.sleep(60)
 
@@ -113,9 +113,10 @@ while True:
 
     if app_time_logger.is_alive == False:
         app_time_logger.start()
-    
+
     start_len = len(app_names)
 
+    # Welcome message
     print("""
     Welcome to Bookworm-bit's anti-procrastination app
     [1] Add an app to your blacklist
@@ -138,21 +139,18 @@ while True:
         app_index = 0
         app_name = input(
             "Enter the name of the app you want to add to your blacklist: ")
-        
-        with open("blacklist.txt", "r+") as blfile:
-            blfile.write(app_name)
-            app_index = len(blfile.readlines()) - 1
-        print("App added to blacklist!")
 
         time_limit = input(
             "Enter the time limit you want to set for this app (minutes): ")
-        try:
-            time_limit = int(time_limit)
-        except ValueError:
-            print("Please enter a number")
-            continue
+        
+        # try:
+        #     time_limit = int(time_limit)
+        # except ValueError:
+        #     print("Please enter a number")
+        
         with open("blacklist.txt", "r+") as blfile:
-            blfile.readlines()[app_index] += f" [{str(time_limit)}]"
+            blfile.write(app_name + f" [{time_limit}]\n")
+
             app_names.append(app_name)
             time_limits.append(time_limit)
 
@@ -167,15 +165,15 @@ while True:
         with open("blacklist.txt", "r+") as blfile:
             data = blfile.readlines()
             app_names = [app.partition(" [")[0] for app in data]
-            app_times = [app.partition(" [")[2].partition("]")[0] for app in data]
-        
+            app_times = [app.partition(" [")[2].partition("]")[ 0] for app in data]
+
         if app_name in app_names:
             app_index = app_names.index(app_name)
             app_in_blacklist = True
         else:
             print("App not found in blacklist")
             continue
-        
+
         if app_in_blacklist:
             time_limit = input(
                 "Enter the new time limit you want to set for this app (minutes): ")
@@ -186,10 +184,11 @@ while True:
                 continue
 
             with open("blacklist.txt", "r+") as blfile:
-                blfile.readlines()[app_index] = f"{app_name} [{str(time_limit)}]"
+                blfile.readlines()[
+                    app_index] = f"{app_name} [{str(time_limit)}]"
                 time_limits.append(time_limit)
             print("App modified on blacklist!")
-    
+
     # Removing app from blacklist
     elif choice == 3:
         app_index = 0
@@ -202,14 +201,14 @@ while True:
         with open("blacklist.txt", "r+") as blfile:
             data = blfile.readlines()
             app_names = [app.partition(" [")[0] for app in data]
-        
+
         if app_name in app_names:
             app_index = app_names.index(app_name)
             app_in_blacklist = True
         else:
             print("App not found in blacklist")
             continue
-            
+
         if app_in_blacklist:
             with open("blacklist.txt", "r+") as blfile:
                 blfile.readlines().pop(app_index)
@@ -229,7 +228,8 @@ while True:
     # Total app time open
     elif choice == 6:
         with open("total_app_times_log.txt", "r") as tatlfile:
-            print(" minutes \n".join([item.partition(",")[0] for item in tatlfile.readlines()]))
+            print(" minutes \n".join([item.partition(",")[0]
+                  for item in tatlfile.readlines()]))
 
     # Average time open for a specific app
     elif choice == 7:
@@ -238,13 +238,15 @@ while True:
             data = tatlfile.readlines()
             for item in data:
                 if re.match(f"^{selected_app}.*", item):
-                    day_count = int(item.partition(", ")[2].partition(" \n")[0])
-                    print(f"You use {selected_app} for around {str(int(item.partition(': ')[2].partition(', ')[0]) / day_count)} minutes per day")
+                    day_count = int(item.partition(
+                        ", ")[2].partition(" \n")[0])
+                    print(
+                        f"You use {selected_app} for around {str(int(item.partition(': ')[2].partition(', ')[0]) / day_count)} minutes per day")
 
     # Exit
     elif choice == 8:
         break
-    
+
     # App checking
     with open('blacklist.txt', 'r') as blfile:
         data = blfile.readlines()
