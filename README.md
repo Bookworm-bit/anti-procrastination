@@ -13,7 +13,7 @@ Features:
 
 ## Installing
 
-The [Dockerfile](https://Bookworm-bit/anti-procrastination/blob/main/Dockerfile) does that for you!
+Run [install.py](https://github.com/Bookworm-bit/anti-procrastination/blob/main/setup.py)
 
 ## Executing program
 

@@ -219,6 +219,8 @@ while True:
     elif choice == 4:
         with open("blacklist.txt", "r") as blfile:
             print(blfile.readlines())
+        print(app_names)
+        print(time_limits)
 
     # Show how long you have used an app today
     elif choice == 5:
