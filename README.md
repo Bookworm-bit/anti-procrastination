@@ -1,4 +1,4 @@
-# Bookcrastinator
+# Phrowl
 
 An app to help with procrastination on PCs.
 
